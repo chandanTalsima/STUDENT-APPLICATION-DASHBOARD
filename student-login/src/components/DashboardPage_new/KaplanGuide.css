@@ -1,0 +1,43 @@
+.kaplan-application-guide {
+  font-family: inherit;
+  background-color: #f5f8fa;
+  padding: 20px;
+  border-radius: 8px;
+  color: #333;
+  font-size: 14px; /* Decreased font size */
+  line-height: 1.5;
+}
+
+.kaplan-application-guide h2 {
+  color: #003366;
+  margin-bottom: 16px;
+  font-size: 18px; /* Smaller heading */
+}
+
+.kaplan-step {
+  border-left: 4px solid #003366;
+  background: #fff;
+  padding: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.kaplan-step h3 {
+  margin-top: 0;
+  color: #003366;
+  font-size: 16px; /* Slightly smaller subheading */
+}
+
+.kaplan-step ul {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+.kaplan-step p {
+  margin: 6px 0;
+}
+
+.kaplan-application-guide a {
+  color: #0056b3;
+  text-decoration: underline;
+}
