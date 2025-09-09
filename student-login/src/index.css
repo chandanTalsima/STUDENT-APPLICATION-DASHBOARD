@@ -1,0 +1,11 @@
+body, .MuiTypography-root, .apexcharts-xaxis text, .trendGraph-select, .MuiButtonBase-root {
+  font-family: 'Lexend' !important;
+}
+
+.apexcharts-xaxis text, .apexcharts-yaxis text, .MuiButtonBase-root, .ai-action-heading {
+  font-family: 'Inter' !important;
+}
+
+.ai-action-heading {
+  line-height: 20px !important;
+}
