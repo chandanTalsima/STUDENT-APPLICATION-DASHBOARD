@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const Guidelines = () => {
   const [activeStep, setActiveStep] = useState(null);
@@ -66,8 +66,6 @@ const Guidelines = () => {
   return (
     <div style={{
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      maxHeight: '600px',
-      overflowY: 'auto',
       padding: '8px'
     }}>
       {steps.map((step, index) => {
