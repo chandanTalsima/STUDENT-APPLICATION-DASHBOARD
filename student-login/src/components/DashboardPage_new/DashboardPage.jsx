@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -20,7 +21,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import SchoolIcon from "@mui/icons-material/School";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import KaplanLogo from "../../assets/talismalogo.png";
+import LogoutIcon from "@mui/icons-material/Logout";
+import KaplanLogo from "../../assets/university.png";
 // Guidelines component modified to remove internal scrolling
 const Guidelines = () => {
   const [activeStep, setActiveStep] = React.useState(null);
@@ -60,7 +62,7 @@ const Guidelines = () => {
       title: "Statement of Purpose",
       icon: "📝",
       description: "Share your motivation and goals",
-      items: ["Upload or paste a 500-word SOP outlining goals and reason for choosing CXM University"]
+      items: ["Upload or paste a 500-word SOP outlining goals and reason for choosing Global University"]
     },
     {
       id: 6,
@@ -284,7 +286,7 @@ const Guidelines = () => {
 const ApplicationCard = ({ appNumber, courses, studentId, index }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [animationDelay] = useState(index * 0.1);
-
+    const redirectCxmaiUrl = `${location.origin}/cxm.ai/?ContactId=${studentId}&Role=OCR_new`;
   return (
     <Card
       variant="outlined"
@@ -381,7 +383,7 @@ const ApplicationCard = ({ appNumber, courses, studentId, index }) => {
                   transition: 'all 0.2s ease'
                 }}
                 onClick={() => {
-                  window.location.href = `https://130518web.saas.talismaonline.com/cxm.ai/?ContactId=${studentId}&Role=OCR_new`;
+                  window.location.href = redirectCxmaiUrl;
                 }}
               >
                 Edit
@@ -522,7 +524,7 @@ const ApplicationCard = ({ appNumber, courses, studentId, index }) => {
               }
             }}
             onClick={() => {
-              window.location.href = `https://130518web.saas.talismaonline.com/cxm.ai/?ContactId=${studentId}&Role=OCR_new`;
+              window.location.href = `${location.origin}/cxm.ai/?ContactId=${studentId}&Role=OCR_new`;
             }}
           >
             <FolderOutlinedIcon fontSize="small" />
@@ -561,6 +563,7 @@ const ApplicationCard = ({ appNumber, courses, studentId, index }) => {
 };
 
 const DashboardPage = ({ studentId, applications = [] }) => {
+  const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -570,7 +573,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
   // Default applications if none provided
   const defaultApplications = [
     {
-      appNumber: "CXMUniversity/02697/Const/2025",
+      appNumber: "GlobalUniversity/02697/Const/2025",
       courses: [
         {
           name: "Master of Science in Computer Science",
@@ -579,14 +582,14 @@ const DashboardPage = ({ studentId, applications = [] }) => {
       ],
     },
     {
-      appNumber: "CXMUniversity/02698/Afft/2025",
+      appNumber: "GlobalUniversity/02698/Afft/2025",
       courses: [
         {
           name: "Master of Science in Computer Science",
           faculty: "Faculty of Science, Fort Lauderdale, Florida, United States",
         },
       ],
-    }
+    },
   ];
 
   const applicationsToShow = applications.length > 0 ? applications : defaultApplications;
@@ -596,7 +599,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
       sx={{
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         minHeight: '100vh',
-        p: { xs: 2, md: 3 }
+        p: { xs: 2, md: 3 },
       }}
     >
       <Box
@@ -605,11 +608,11 @@ const DashboardPage = ({ studentId, applications = [] }) => {
           margin: '0 auto',
           opacity: isLoaded ? 1 : 0,
           transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'all 0.6s ease-out'
+          transition: 'all 0.6s ease-out',
         }}
       >
         {/* Header */}
-        <Box 
+        <Box
           sx={{
             bgcolor: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(10px)',
@@ -617,50 +620,66 @@ const DashboardPage = ({ studentId, applications = [] }) => {
             p: 3,
             mb: 3,
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
+            border: '1px solid rgba(255, 255, 255, 0.2)',
           }}
         >
-          <Box display="flex" alignItems="center" gap={2}>
+          <Box display="flex" alignItems="center" justifyContent="space-between" gap={2}>
             <Avatar
               sx={{
-                width: 56,
-                height: 56,
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)'
+                width: 58,
+                height: 58,
+                background: 'linear-gradient(135deg,rgb(255, 255, 255) 0%,rgb(255, 255, 255) 100%)',
+                boxShadow: '0 4px 12px rgba(255, 255, 255, 255)',
               }}
             >
               <img
                 src={KaplanLogo}
                 alt="Logo"
-                style={{ width: '70%', height: '70%', objectFit: 'contain' }}
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />
             </Avatar>
             <Box>
-              <Typography 
-                variant="h4" 
-                fontWeight="bold" 
+              <Typography
+                variant="h4"
+                fontWeight="bold"
                 sx={{
                   background: 'linear-gradient(135deg, #1f2937 0%, #4f46e5 100%)',
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   fontSize: { xs: '24px', md: '32px' },
-                  letterSpacing: '-0.025em'
+                  letterSpacing: '-0.025em',
                 }}
               >
-                CXM University
+                Global University
               </Typography>
-              <Typography 
-                variant="h6" 
-                sx={{ 
+              <Typography
+                variant="h6"
+                sx={{
                   color: '#6b7280',
                   fontWeight: 500,
-                  fontSize: { xs: '16px', md: '18px' }
+                  fontSize: { xs: '16px', md: '18px' },
                 }}
               >
-                Student Dashboard
+              
               </Typography>
             </Box>
+            <Tooltip title="Logout">
+              <IconButton
+                color="primary"
+                onClick={() => navigate('/login_new')}
+                sx={{
+                  bgcolor: 'rgba(99, 102, 241, 0.1)',
+                  '&:hover': {
+                    bgcolor: 'rgba(99, 102, 241, 0.2)',
+                  },
+                  transition: 'all 0.2s ease-in-out',
+                  ml: 'auto',
+                }}
+              >
+                <LogoutIcon />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
 
