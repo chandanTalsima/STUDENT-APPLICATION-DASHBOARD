@@ -215,31 +215,6 @@ const ApplicationCard = ({ appNumber, courses, studentId, index }) => {
         <Divider sx={{ my: 2.5, opacity: 0.6 }} />
 
         <Box display="flex" gap={3} flexWrap="wrap">
-          <Link
-            href="#"
-            underline="none"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              color: '#6366f1',
-              fontSize: '14px',
-              fontWeight: 600,
-              px: 2,
-              py: 1,
-              borderRadius: 1.5,
-              bgcolor: '#f0f9ff',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                bgcolor: '#e0f2fe',
-                transform: 'translateY(-1px)',
-                color: '#4f46e5'
-              }
-            }}
-          >
-            <PaymentOutlinedIcon fontSize="small" />
-            Pay Now
-          </Link>
 
           <Link
             href="#"
@@ -270,32 +245,61 @@ const ApplicationCard = ({ appNumber, courses, studentId, index }) => {
             <FolderOutlinedIcon fontSize="small" />
             Documents
           </Link>
-
           <Link
             href="#"
             underline="none"
+            onClick={(e) => e.preventDefault()}
             sx={{
               display: 'flex',
               alignItems: 'center',
               gap: 1,
-              color: '#dc2626',
+              color: '#9ca3af',
               fontSize: '14px',
               fontWeight: 600,
               px: 2,
               py: 1,
               borderRadius: 1.5,
-              bgcolor: '#fef2f2',
+              bgcolor: '#f3f4f6',
               transition: 'all 0.2s ease',
+              cursor: 'not-allowed',
               '&:hover': {
-                bgcolor: '#fee2e2',
-                transform: 'translateY(-1px)',
-                color: '#b91c1c'
+                bgcolor: '#f3f4f6',
+                transform: 'none',
+                color: '#9ca3af'
+              }
+            }}
+          >
+            <PaymentOutlinedIcon fontSize="small" />
+            Pay Now
+          </Link>
+
+          <Link
+            href="#"
+            underline="none"
+            onClick={(e) => e.preventDefault()}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              color: '#9ca3af',
+              fontSize: '14px',
+              fontWeight: 600,
+              px: 2,
+              py: 1,
+              borderRadius: 1.5,
+              bgcolor: '#f3f4f6',
+              transition: 'all 0.2s ease',
+              cursor: 'not-allowed',
+              '&:hover': {
+                bgcolor: '#f3f4f6',
+                transform: 'none',
+                color: '#9ca3af'
               }
             }}
           >
             <DownloadOutlinedIcon fontSize="small" />
             Download
-          </Link>
+          </Link> 
         </Box>
       </CardContent>
     </Card>

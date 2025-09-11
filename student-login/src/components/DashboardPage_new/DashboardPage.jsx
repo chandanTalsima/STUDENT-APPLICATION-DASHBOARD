@@ -25,7 +25,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
   // Default applications if none provided
   const defaultApplications = [
     {
-      appNumber: "GlobalUniversity/02697/Const/2025",
+      appNumber: "TalismaUniversity/02697/Const/2025",
       courses: [
         {
           name: "Master of Science in Computer Science",
@@ -34,7 +34,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
       ],
     },
     {
-      appNumber: "GlobalUniversity/02698/Afft/2025",
+      appNumber: "TalismaUniversity/02698/Afft/2025",
       courses: [
         {
           name: "Master of Science in Computer Science",
@@ -103,7 +103,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
                   letterSpacing: '-0.025em',
                 }}
               >
-                Global University
+                TALISMA UNIVERSITY
               </Typography>
               <Typography
                 variant="h6"
