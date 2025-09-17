@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -9,58 +9,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import studentImage from "../../assets/girlphoto.jpg";
 import booksImage from "../../assets/books.png";
-import university from "../../assets/university.png";
-import { defaultUniversityConfig as universityConfig } from "../../api/universityConfigApi";
 
 const LoginPageNew = () => {
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [currentConfig, setCurrentConfig] = useState(universityConfig);
-  const [logoUrl, setLogoUrl] = useState(() => {
-    const logo = universityConfig.logoPath;
-    if (!logo) return university;
-    if (logo.startsWith('data:') || logo.startsWith('http') || logo.startsWith('/')) {
-      return logo;
-    }
-    return `${window.location.origin}${logo.startsWith('/') ? '' : '/'}${logo}`;
-  });
-
+  
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const loadInitialConfig = async () => {
-      try {
-        const { fetchConfig } = await import("../../api/universityConfigApi");
-        const { data: configFromAPI } = await fetchConfig();
-        setCurrentConfig(configFromAPI);
-        
-        const logo = configFromAPI.logoPath;
-        if (!logo) {
-          setLogoUrl(university);
-        } else if (logo.startsWith('data:') || logo.startsWith('http') || logo.startsWith('/')) {
-          setLogoUrl(logo);
-        } else {
-          setLogoUrl(`${window.location.origin}${logo.startsWith('/') ? '' : '/'}${logo}`);
-        }
-      } catch (error) {
-        console.error('Failed to load config from API:', error);
-      }
-    };
-    
-    loadInitialConfig();
-  }, []);
-
-  useEffect(() => {
-    const logo = currentConfig.logoPath;
-    if (!logo) {
-      setLogoUrl(university);
-    } else if (logo.startsWith('data:') || logo.startsWith('http') || logo.startsWith('/')) {
-      setLogoUrl(logo);
-    } else {
-      setLogoUrl(`${window.location.origin}${logo.startsWith('/') ? '' : '/'}${logo}`);
-    }
-  }, [currentConfig.logoPath]);
 
   const handleLogin = () => {
     if (studentId.trim()) {
@@ -145,35 +100,8 @@ const LoginPageNew = () => {
             flexDirection="column" 
             alignItems="center" 
             mb={4}
+            mt={4}
           >
-            <Box 
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                backgroundColor: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                mb: 2,
-                overflow: 'hidden'
-              }}
-            >
-              <img
-                src={logoUrl}
-                alt={currentConfig.universityName || "University Logo"}
-                style={{ width: '85%', height: '85%', objectFit: 'contain',
-                  transition: 'opacity 0.3s ease'
-                }}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = university;
-                }}
-                key={logoUrl} 
-              />
-            </Box>
-            
             <Typography
               variant="h5"
               color="primary"
@@ -185,48 +113,48 @@ const LoginPageNew = () => {
                 mb: 1
               }}
             >
-              Student  Application Portal   
+              Student Application Portal
             </Typography>
             
-            <Typography variant="h5" fontWeight="bold" mb={3} textAlign="center">
+            <Typography variant="h6" fontWeight="bold" mb={3} textAlign="center">
               Welcome Back!
             </Typography>
-          </Box>
 
-          <Box sx={{ width: '100%', mb: 4 }}>
-            <TextField
-              label="Applicant ID"
-              fullWidth
-              variant="outlined"
-              size="small"
-              margin="normal"
-              value={studentId}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (/^\d*$/.test(value)) {
-                  setStudentId(value);
-                }
-              }}
-              inputProps={{ 
-                inputMode: "numeric",
-                style: { fontSize: '0.9rem' }
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '8px',
-                  '& fieldset': {
-                    borderColor: '#e0e0e0',
+            <Box sx={{ width: '100%', mb: 4 }}>
+              <TextField
+                label="Applicant ID"
+                fullWidth
+                variant="outlined"
+                size="small"
+                margin="normal"
+                value={studentId}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    setStudentId(value);
+                  }
+                }}
+                inputProps={{ 
+                  inputMode: "numeric",
+                  style: { fontSize: '0.9rem' }
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    '& fieldset': {
+                      borderColor: '#e0e0e0',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#8ec5fc',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#8ec5fc',
+                      borderWidth: '1px',
+                    },
                   },
-                  '&:hover fieldset': {
-                    borderColor: '#8ec5fc',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#8ec5fc',
-                    borderWidth: '1px',
-                  },
-                },
-              }}
-            />
+                  mb: 2
+                }}
+              />
 
             <TextField
               label="Password"
@@ -318,6 +246,7 @@ const LoginPageNew = () => {
           >
             Sign In
           </Button>
+          </Box>
         </Box>
 
         {/* Right - Image */}

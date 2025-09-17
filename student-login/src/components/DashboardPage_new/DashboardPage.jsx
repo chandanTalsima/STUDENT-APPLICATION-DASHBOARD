@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Box,
+ Box,
   Typography,
   Divider,
   Chip,
   Avatar,
   IconButton,
   Tooltip,
+  Snackbar, 
+  Alert, 
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -32,7 +34,11 @@ const DashboardPage = ({ studentId, applications = [] }) => {
   const [currentConfig, setCurrentConfig] = useState({ ...defaultUniversityConfig });
   const [universityName, setUniversityName] = useState(defaultUniversityConfig.universityName || 'University');
   const [universityLogo, setUniversityLogo] = useState('');
-
+  const [snackbar, setSnackbar] = useState({
+  open: false,
+  message: '',
+  severity: 'success'
+});
   const defaultApplications = useMemo(() => [
     {
       courses: [
@@ -93,14 +99,12 @@ const DashboardPage = ({ studentId, applications = [] }) => {
       setIsLoadingUniversities(true);
       const universitiesList = await getAllUniversities();
       
-      console.log('Universities loaded:', universitiesList.map(u => ({
-        name: u.universityName || u.name,
-        isSelected: u.isSelected
-      })));
+      // console.log('Universities loaded:', universitiesList.map(u => ({
+      //   name: u.universityName || u.name,
+      //   isSelected: u.isSelected
+      // })));
       
       setUniversities(universitiesList);
-      
-      // If there's a selected university, use it
       const selectedUniversity = universitiesList.find(u => u.isSelected);
       if (selectedUniversity && !universityName) {
         setUniversityName(selectedUniversity.universityName || selectedUniversity.name);
@@ -113,7 +117,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
     } finally {
       setIsLoadingUniversities(false);
     }
-  }, []);
+  }, [universityName]);
 
   const handleUniversityChange = useCallback(async (university) => {
     if (!university) {
@@ -122,26 +126,58 @@ const DashboardPage = ({ studentId, applications = [] }) => {
     }
     
     const uniName = university.universityName || university.name || university;
-    console.log('University changed to:', uniName);
+    //console.log('University changed to:', uniName);
     
     try {
       setIsLoadingUniversities(true);
       
-      let universityId = university.id;
-      if (!universityId && (university.universityName || university.name)) {
-        const found = universities.find(u => 
-          u.universityName === (university.universityName || university.name) || 
-          u.name === (university.universityName || university.name)
-        );
-        if (found) {
-          universityId = found.id;
-        }
-      }
+      const selectedUniversity = universities.find(u => 
+        u.universityName === uniName || u.name === uniName || u.id === university.id
+      );
       
-      if (!universityId) {
-        console.warn(`Could not find ID for university: ${uniName}`);
+      if (!selectedUniversity) {
+        console.warn(`Could not find university: ${uniName}`);
         return;
       }
+      
+      const universityId = selectedUniversity.id;
+      
+      const updatePromises = universities.map(async (uni) => {
+        const shouldBeSelected = uni.id === universityId;
+        
+        if (uni.isSelected !== shouldBeSelected) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/updateUniversitySelection`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                universityId: uni.id,
+                isSelected: shouldBeSelected
+              })
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Failed to update university ${uni.id}`);
+            }
+            
+            return {
+              ...uni,
+              isSelected: shouldBeSelected
+            };
+          } catch (error) {
+            console.error(`Error updating university ${uni.id}:`, error);
+            return uni; 
+          }
+        }
+        return uni; 
+      });
+  
+      const updatedUniversities = await Promise.all(updatePromises);
+      setUniversities(updatedUniversities);
+  
+      setUniversityName(uniName);
       
       const { data: config, error } = await fetchConfig(universityId);
       
@@ -169,7 +205,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
           setUniversityLogo(processedLogo);
         }
         
-        console.log('Successfully updated university to:', newUniversityName);
+        //console.log('Successfully updated university to:', newUniversityName);
       }
     } catch (error) {
       console.error('Error in handleUniversityChange:', error);
@@ -178,110 +214,121 @@ const DashboardPage = ({ studentId, applications = [] }) => {
     }
   }, [universities, currentConfig, processLogoUrl]);
 
-  const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = null, isUniversityChange = false) => {
-    setOpenSettings(false);
-    
-    if (!updatedConfig) return;
 
-    try {
-      setIsLoading(true);
-      
-      // The config from Settings should already be in the correct format
-      const configToSave = {
-        UniversityName: updatedConfig.UniversityName || currentConfig.universityName,
-        isSelected: true, // Always set isSelected to true when saving
-        ...(updatedConfig.File && { File: updatedConfig.File }) // Use File from updatedConfig if it exists
+const showMessage = (message, severity = 'success') => {
+  setSnackbar({
+    open: true,
+    message,
+    severity
+  });
+};
+
+const handleSnackbarClose = () => {
+  setSnackbar(prev => ({ ...prev, open: false }));
+};
+
+
+const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = null, isUniversityChange = false) => {
+  setOpenSettings(false);
+  
+  if (!updatedConfig) return;
+
+  try {
+    setIsLoading(true);
+
+    if (!updatedConfig.UniversityName || updatedConfig.UniversityName.trim() === '') {
+      setIsLoading(false);
+      return;
+    }
+    
+    const newUniversityName = updatedConfig.UniversityName.trim();
+    let shouldCallAPI = false;
+    let configToSave = null;
+
+    if (updatedConfig.hasFileChange) {
+      shouldCallAPI = true;
+      configToSave = {
+        UniversityName: newUniversityName,
+        isSelected: true,
+        File: updatedConfig.File
       };
-      
+    } else if (updatedConfig.skipFileUpload) {
+      shouldCallAPI = false;
+      //console.log('Skipping API call - only university name changed');
+    }
+
+    if (shouldCallAPI && configToSave) {
       try {
-        console.log('Saving configuration with file:', !!configToSave.File);
+        //console.log('Saving configuration with file:', !!configToSave.File);
         const { data: configSaved, error: saveError } = await updateUniversityConfig(configToSave);
         
         if (saveError) {
-          console.error('Config save failed, but continuing with local update:', saveError);
+          console.error('Config save failed:', saveError);
         } else {
-          console.log('Configuration saved successfully');
+          //console.log('Configuration saved successfully via API');
           
-          // Update logo if we have a new one from the response or from the file upload
           if (configSaved?.logoPath) {
             const processedLogo = processLogoUrl(configSaved.logoPath);
             if (processedLogo) {
               setUniversityLogo(processedLogo);
               logoUrl = processedLogo;
             }
-          } else if (logoUrl) {
-            // If we have a logo URL from the settings but no file was uploaded, use it directly
-            setUniversityLogo(logoUrl);
           }
         }
-        
-        // Update university name if changed
-        const newUniversityName = updatedConfig.UniversityName || currentConfig.universityName;
-        if (newUniversityName && newUniversityName !== universityName) {
-          console.log('Updating university name to:', newUniversityName);
-          setUniversityName(newUniversityName);
-          
-          // Update current config
-          setCurrentConfig(prev => ({
-            ...prev,
-            universityName: newUniversityName,
-            isSelected: true
-          }));
-        }
       } catch (apiError) {
-        console.error('API call failed, continuing with local update:', apiError);
+        console.error('API call failed:', apiError);
+        showMessage(`API call failed: ${apiError.message}. Changes saved.`, 'warning');
       }
-      
-      const updatedUniversityName = updatedConfig.UniversityName || currentConfig.universityName;
-      
-      const finalConfig = {
-        ...currentConfig,
-        ...updatedConfig,
-        universityName: updatedUniversityName,
-        isSelected: true, // Ensure isSelected is always true
-        id: updatedConfig.id || currentConfig.id
-      };
-      
-      setCurrentConfig(finalConfig);
-      setUniversityName(updatedUniversityName);
-
-      let finalLogoUrl = '';
-      if (logoUrl) {
-        // If we have a logo URL (either from file upload or existing), use it
-        finalLogoUrl = logoUrl;
-      } else if (updatedConfig.logoPath) {
-        finalLogoUrl = processLogoUrl(updatedConfig.logoPath);
-      } else if (finalConfig.logoPath) {
-        finalLogoUrl = processLogoUrl(finalConfig.logoPath);
-      }
-      
-      if (finalLogoUrl && finalLogoUrl !== universityLogo) {
-        console.log('Final logo update to:', finalLogoUrl);
-        setUniversityLogo(finalLogoUrl);
-      }
-
-      try {
-        await loadUniversities();
-        console.log('Successfully reloaded universities list');
-      } catch (error) {
-        console.error('Failed to reload universities, but configuration was updated locally:', error);
-      }
-      
-      console.log('University configuration update completed successfully');
-      
-    } catch (error) {
-      console.error('Error in handleSettingsClose:', error);
-      if (updatedConfig.universityName) {
-        setUniversityName(updatedConfig.universityName);
-        setCurrentConfig(prev => ({
-          ...prev,
-          ...updatedConfig
-        }));
-      }
-    } finally {
-      setIsLoading(false);
+    } else {
+      //console.log('Updating configuration only');
+      showMessage('University name updated', 'success');
     }
-  }, [currentConfig, processLogoUrl, loadUniversities, universityLogo, universityName]);
+    if (newUniversityName !== universityName) {
+      //console.log('Updating university name to:', newUniversityName);
+      setUniversityName(newUniversityName);
+      
+      setCurrentConfig(prev => ({
+        ...prev,
+        universityName: newUniversityName,
+        isSelected: true
+      }));
+    }
+    
+    if (logoUrl) {
+      setUniversityLogo(logoUrl);
+    } else if (file && file instanceof File) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUniversityLogo(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    const finalConfig = {
+      ...currentConfig,
+      universityName: newUniversityName,
+      isSelected: true,
+      id: updatedConfig.id || currentConfig.id
+    };
+    
+    setCurrentConfig(finalConfig);
+
+    try {
+      await loadUniversities();
+      //console.log('Successfully reloaded universities list');
+    } catch (error) {
+      console.error('Failed to reload universities, but configuration was updated :', error);
+    }
+    
+    //console.log('University configuration update completed successfully');
+    
+  } catch (error) {
+    console.error('Error in handleSettingsClose:', error);
+    showMessage(`Error updating configuration: ${error.message}`, 'error');
+  } finally {
+    setIsLoading(false);
+  }
+}, [currentConfig, processLogoUrl, loadUniversities, universityLogo, universityName, updateUniversityConfig]);
 
   useEffect(() => {
     const initialize = async () => {
@@ -294,11 +341,10 @@ const DashboardPage = ({ studentId, applications = [] }) => {
         }
         
         if (universitiesList.length > 0) {
-          // Find the selected university
           const selectedUni = universitiesList.find(u => u.isSelected);
           
           if (selectedUni) {
-            console.log('Found selected university:', selectedUni.universityName || selectedUni.name);
+            //console.log('Found selected university:', selectedUni.universityName || selectedUni.name);
             
             const config = await loadConfigFromAPI(selectedUni.universityName || selectedUni.name);
             if (config && config.universityName) {
@@ -314,13 +360,12 @@ const DashboardPage = ({ studentId, applications = [] }) => {
               }
             }
           } else {
-            console.log('No university is selected');
-            // If no university is selected, don't set a default one
+            //console.log('No university is selected');
             setUniversityName('University');
             setUniversityLogo('');
           }
         } else {
-          console.log('No universities found');
+          //console.log('No universities found');
           setUniversityName('University');
           setUniversityLogo('');
         }
@@ -645,6 +690,22 @@ const DashboardPage = ({ studentId, applications = [] }) => {
           onUniversityChange={handleUniversityChange}
         />
       </Box>
+      <Snackbar
+  open={snackbar.open}
+  autoHideDuration={6000}
+  onClose={handleSnackbarClose}
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+>
+  <Alert 
+    onClose={handleSnackbarClose} 
+    severity={snackbar.severity} 
+    sx={{ width: '100%' }}
+    elevation={6}
+    variant="filled"
+  >
+    {snackbar.message}
+  </Alert>
+</Snackbar>
     </Box>
   );
 };
