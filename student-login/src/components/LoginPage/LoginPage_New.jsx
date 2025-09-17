@@ -1,24 +1,66 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
-  IconButton,
-  InputAdornment,
   Paper,
   TextField,
   Typography,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import studentImage from "../../assets/girlphoto.jpg";
 import booksImage from "../../assets/books.png";
 import university from "../../assets/university.png";
+import { defaultUniversityConfig as universityConfig } from "../../api/universityConfigApi";
 
 const LoginPageNew = () => {
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [currentConfig, setCurrentConfig] = useState(universityConfig);
+  const [logoUrl, setLogoUrl] = useState(() => {
+    const logo = universityConfig.logoPath;
+    if (!logo) return university;
+    if (logo.startsWith('data:') || logo.startsWith('http') || logo.startsWith('/')) {
+      return logo;
+    }
+    return `${window.location.origin}${logo.startsWith('/') ? '' : '/'}${logo}`;
+  });
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadInitialConfig = async () => {
+      try {
+        const { fetchConfig } = await import("../../api/universityConfigApi");
+        const { data: configFromAPI } = await fetchConfig();
+        setCurrentConfig(configFromAPI);
+        
+        const logo = configFromAPI.logoPath;
+        if (!logo) {
+          setLogoUrl(university);
+        } else if (logo.startsWith('data:') || logo.startsWith('http') || logo.startsWith('/')) {
+          setLogoUrl(logo);
+        } else {
+          setLogoUrl(`${window.location.origin}${logo.startsWith('/') ? '' : '/'}${logo}`);
+        }
+      } catch (error) {
+        console.error('Failed to load config from API:', error);
+      }
+    };
+    
+    loadInitialConfig();
+  }, []);
+
+  useEffect(() => {
+    const logo = currentConfig.logoPath;
+    if (!logo) {
+      setLogoUrl(university);
+    } else if (logo.startsWith('data:') || logo.startsWith('http') || logo.startsWith('/')) {
+      setLogoUrl(logo);
+    } else {
+      setLogoUrl(`${window.location.origin}${logo.startsWith('/') ? '' : '/'}${logo}`);
+    }
+  }, [currentConfig.logoPath]);
 
   const handleLogin = () => {
     if (studentId.trim()) {
@@ -119,9 +161,16 @@ const LoginPageNew = () => {
               }}
             >
               <img
-                src={university}
-                alt="University Logo"
-                style={{ width: '85%', height: '85%', objectFit: 'contain' }}
+                src={logoUrl}
+                alt={currentConfig.universityName || "University Logo"}
+                style={{ width: '85%', height: '85%', objectFit: 'contain',
+                  transition: 'opacity 0.3s ease'
+                }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = university;
+                }}
+                key={logoUrl} 
               />
             </Box>
             
@@ -136,11 +185,11 @@ const LoginPageNew = () => {
                 mb: 1
               }}
             >
-              Student  Application Portal
+              Student  Application Portal   
             </Typography>
             
-          <Typography variant="h5" fontWeight="bold" mb={3} textAlign="center">
-            Welcome Back!
+            <Typography variant="h5" fontWeight="bold" mb={3} textAlign="center">
+              Welcome Back!
             </Typography>
           </Box>
 

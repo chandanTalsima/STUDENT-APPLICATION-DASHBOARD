@@ -20,11 +20,12 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PaymentOutlinedIcon from '@mui/icons-material/PaymentOutlined';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import DownloadOutlinedIcon from '@mui/icons-material/DownloadOutlined';
+import { getCxmaiUrl } from '../../config/urls';
 
 const ApplicationCard = ({ appNumber, courses, studentId, index }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [animationDelay] = useState(index * 0.1);
-  const redirectCxmaiUrl = `${window.location.origin}/cxm.ai/?ContactId=${studentId}&Role=OCR_new`;
+  const redirectCxmaiUrl = getCxmaiUrl(studentId);
   
   return (
     <Card
@@ -147,7 +148,7 @@ const ApplicationCard = ({ appNumber, courses, studentId, index }) => {
 
         <Grid container spacing={2}>
           {courses.map((course, idx) => (
-            <Grid item xs={12} key={idx}>
+            <Grid key={idx} columns={{ xs: 12 }}>
               <Box 
                 sx={{
                   p: 2,
