@@ -209,7 +209,7 @@ export const fetchConfig = async (universityId) => {
           ...universityData,
           universityName: universityData.name || universityId,
           logoPath: universityData.logoUrl || '',
-          isSelected: universityData.isSelected === true || universityData.isSelected === 'true'
+          isSelected: universityData.isSelected === true || universityData.isSelected.toLowerCase() === 'true'
         }, 
         error: null 
       };
@@ -251,77 +251,77 @@ export const getAllUniversities = async () => {
     const data = JSON.parse(responseText);
     console.log('Parsed data type:', typeof data, 'Total keys:', Object.keys(data).length);
     
-    const universities = [];
-    let latestUniversity = null;
-    let latestTimestamp = 0;
+    //const universities = [];
+    // let latestUniversity = null;
+    // let latestTimestamp = 0;
 
     // First pass: collect all universities and find the selected one
-    const universityEntries = Object.entries(data);
-    let selectedUniversity = null;
+    // const universityEntries = Object.entries(data);
+    // let selectedUniversity = null;
     
-    universityEntries.forEach(([id, uniData]) => {
-      try {
-        if (uniData && typeof uniData === 'object' && uniData.name) {
-          // Check if this university is marked as selected in the API response
-          const isSelected = uniData.isSelected === true || uniData.isSelected.toLowerCase() === 'true';
+    // universityEntries.forEach(([id, uniData]) => {
+    //   try {
+    //     if (uniData && typeof uniData === 'object' && uniData.name) {
+    //       // Check if this university is marked as selected in the API response
+    //       const isSelected = uniData.isSelected === true || uniData.isSelected.toLowerCase() === 'true';
           
-          if (isSelected) {
-            selectedUniversity = { id, ...uniData };
-          }
+    //       if (isSelected) {
+    //         selectedUniversity = { id, ...uniData };
+    //       }
           
-          // Keep track of the most recent university as fallback
-          const timestamp = uniData.lastModified ? new Date(uniData.lastModified).getTime() : 0;
-          if (timestamp > latestTimestamp) {
-            latestTimestamp = timestamp;
-            latestUniversity = { id, ...uniData };
-          }
-        }
-      } catch (error) {
-        console.error('Error processing university:', id, error);
-      }
-    });
+    //       // Keep track of the most recent university as fallback
+    //       const timestamp = uniData.lastModified ? new Date(uniData.lastModified).getTime() : 0;
+    //       if (timestamp > latestTimestamp) {
+    //         latestTimestamp = timestamp;
+    //         latestUniversity = { id, ...uniData };
+    //       }
+    //     }
+    //   } catch (error) {
+    //     console.error('Error processing university:', id, error);
+    //   }
+    // });
 
-    // If no university is explicitly selected, use the most recent one
-    if (!selectedUniversity && latestUniversity) {
-      selectedUniversity = latestUniversity;
-    }
+    // // If no university is explicitly selected, use the most recent one
+    // if (!selectedUniversity && latestUniversity) {
+    //   selectedUniversity = latestUniversity;
+    // }
 
-    // Second pass: create university objects with proper selection state
-    universityEntries.forEach(([id, uniData]) => {
-      try {
-        if (uniData && typeof uniData === 'object' && uniData.name) {
-          // Check if this is the selected university
-          const isSelected = selectedUniversity ? id === selectedUniversity.id : false;
-          console.log(`Adding university: ${uniData.name}${isSelected ? ' (selected)' : ''}`);
+    // // Second pass: create university objects with proper selection state
+    // universityEntries.forEach(([id, uniData]) => {
+    //   try {
+    //     if (uniData && typeof uniData === 'object' && uniData.name) {
+    //       // Check if this is the selected university
+    //       const isSelected = selectedUniversity ? id === selectedUniversity.id : false;
+    //       console.log(`Adding university: ${uniData.name}${isSelected ? ' (selected)' : ''}`);
           
-          universities.push({
-            id: id,
-            universityName: uniData.name,
-            logoUrl: uniData.logoUrl || '',
-            isSelected: isSelected,
-            lastModified: uniData.lastModified
-          });
-        } else {
-          console.log('Skipping invalid university data:', { id, uniData });
-        }
-      } catch (error) {
-        console.error('Error processing university:', id, error);
-      }
-    });
+    //       universities.push({
+    //         id: id,
+    //         universityName: uniData.name,
+    //         logoUrl: uniData.logoUrl || '',
+    //         isSelected: isSelected,
+    //         lastModified: uniData.lastModified
+    //       });
+    //     } else {
+    //       console.log('Skipping invalid university data:', { id, uniData });
+    //     }
+    //   } catch (error) {
+    //     console.error('Error processing university:', id, error);
+    //   }
+    // });
     
-    console.log(`Found ${universities.length} universities`);
+    //console.log(`Found ${universities.length} universities`);
     
-    if (universities.length === 0) {
-      console.log('No universities found, returning default');
-      return [{
-        id: 'default',
-        universityName: defaultUniversityConfig.universityName,
-        logoUrl: defaultUniversityConfig.logoPath,
-        isSelected: false
-      }];
-    }
+    // if (universities.length === 0) {
+    //   console.log('No universities found, returning default');
+    //   return [{
+    //     id: 'default',
+    //     universityName: defaultUniversityConfig.universityName,
+    //     logoUrl: defaultUniversityConfig.logoPath,
+    //     isSelected: false
+    //   }];
+    // }
     
-    return universities;
+    return data;
   } catch (error) {
     console.error('Error fetching universities:', error);
     return [];

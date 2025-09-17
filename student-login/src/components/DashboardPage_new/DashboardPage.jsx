@@ -97,12 +97,14 @@ const DashboardPage = ({ studentId, applications = [] }) => {
   const loadUniversities = useCallback(async () => {
     try {
       setIsLoadingUniversities(true);
-      const universitiesList = await getAllUniversities();
+      const universities = await getAllUniversities();
       
       // console.log('Universities loaded:', universitiesList.map(u => ({
       //   name: u.universityName || u.name,
       //   isSelected: u.isSelected
       // })));
+
+      const universitiesList = Object.entries(universities ?? {})?.map(x => ({...x[1],isSelected : x[1].isSelected.toLowerCase() == "true"})) || [];
       
       setUniversities(universitiesList);
       const selectedUniversity = universitiesList.find(u => u.isSelected);
@@ -389,6 +391,15 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
       }
     }
   }, [currentConfig.logoPath, processLogoUrl, universityLogo]);
+  
+  useEffect(() => {
+    if(openSettings)
+    {
+      setCurrentConfig(universities.find(u => u.isSelected))
+    }
+  },[openSettings])
+
+  console.log("initial config",currentConfig);
 
   return (
     <Box

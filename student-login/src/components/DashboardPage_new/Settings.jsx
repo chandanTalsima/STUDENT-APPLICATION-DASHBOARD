@@ -69,7 +69,8 @@ const Settings = ({ open, onClose, config: initialConfig, logo: initialLogo }) =
   const loadUniversities = async () => {
     try {
       setIsLoadingUniversities(true);
-      const universitiesList = await getAllUniversities();
+      const universities = await getAllUniversities();
+      const universitiesList = Object.entries(universities ?? {})?.map(x => ({...x[1],isSelected : x[1].isSelected.toLowerCase() == "true"})) || [];
       setUniversities(universitiesList);
     } catch (error) {
       console.error('Error loading universities:', error);
@@ -183,6 +184,8 @@ const Settings = ({ open, onClose, config: initialConfig, logo: initialLogo }) =
     if (name === 'universityName' && value) {
       setHasBeenCleared(false);
     }
+
+    setLogoPreview('');
   };
 
   const handleFileSelect = (e) => {
@@ -225,7 +228,6 @@ const Settings = ({ open, onClose, config: initialConfig, logo: initialLogo }) =
 
 const handleSubmit = async (e) => {
   e.preventDefault();
-  
   try {
     setIsLoading(true);
     
@@ -290,26 +292,29 @@ const handleSubmit = async (e) => {
       onClose(payload, logoPreview, file, universityNameChanged);
     }
 
-    try {
-      const updatedUniversities = await getAllUniversities();
-      setUniversities(updatedUniversities);
+
+    // try {
+    //   const updatedUniversities = await getAllUniversities();
+    //   const universitiesList = Object.entries(universities ?? {})?.map(x => ({...x[1],isSelected : x[1].isSelected.toLowerCase() == "true"})) || [];
+    //   setUniversities(universitiesList);
  
-      if (universityNameChanged) {
-        const newUniversity = updatedUniversities.find(u => 
-          u.universityName === config.universityName.trim() || 
-          u.name === config.universityName.trim()
-        );
+    //   if (universityNameChanged) {
+
+    //     const newUniversity = updatedUniversities.find(u => 
+    //       u.universityName === config.universityName.trim() || 
+    //       u.name === config.universityName.trim()
+    //     );
         
-        if (newUniversity) {
-          setConfig(prev => ({
-            ...prev,
-            id: newUniversity.id || prev.id
-          }));
-        }
-      }
-    } catch (error) {
-      console.error('Error refreshing universities list:', error);
-    }
+    //     if (newUniversity) {
+    //       setConfig(prev => ({
+    //         ...prev,
+    //         id: newUniversity.id || prev.id
+    //       }));
+    //     }
+    //   }
+    // } catch (error) {
+    //   console.error('Error refreshing universities list:', error);
+    // }
     
   } catch (error) {
     console.error('Error saving configuration:', error);
@@ -570,7 +575,7 @@ const handleSubmit = async (e) => {
                       id="university-select"
                       value={config.universityName || ''}
                       onChange={(e) => {
-                        const selected = universities.find(u => u.universityName === e.target.value);
+                        const selected = universities.find(u => u.name === e.target.value);
                         if (selected) {
                           handleUniversityChange(selected);
                         }
@@ -616,8 +621,8 @@ const handleSubmit = async (e) => {
                       ) : (
                         universities.map((university) => (
                           <MenuItem 
-                            key={university.universityName} 
-                            value={university.universityName}
+                            key={university.name} 
+                            value={university.name}
                             style={{
                               whiteSpace: 'normal',
                               overflow: 'hidden',
@@ -628,7 +633,7 @@ const handleSubmit = async (e) => {
                               WebkitBoxOrient: 'vertical',
                             }}
                           >
-                            {university.universityName}
+                            {university.name}
                           </MenuItem>
                         ))
                       )}
