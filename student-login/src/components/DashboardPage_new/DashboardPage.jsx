@@ -98,13 +98,8 @@ const DashboardPage = ({ studentId, applications = [] }) => {
     try {
       setIsLoadingUniversities(true);
       const universities = await getAllUniversities();
-      
-      // console.log('Universities loaded:', universitiesList.map(u => ({
-      //   name: u.universityName || u.name,
-      //   isSelected: u.isSelected
-      // })));
 
-      const universitiesList = Object.entries(universities ?? {})?.map(x => ({...x[1],isSelected : x[1].isSelected.toLowerCase() == "true"})) || [];
+      const universitiesList =  Object.entries(universities ?? {})?.map(x => ({...x[1],isSelected : x[1].isSelected.toLowerCase() == "true"})) || [];
       
       setUniversities(universitiesList);
       const selectedUniversity = universitiesList.find(u => u.isSelected);
@@ -128,7 +123,6 @@ const DashboardPage = ({ studentId, applications = [] }) => {
     }
     
     const uniName = university.universityName || university.name || university;
-    //console.log('University changed to:', uniName);
     
     try {
       setIsLoadingUniversities(true);
@@ -206,8 +200,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
           const processedLogo = processLogoUrl(newLogo);
           setUniversityLogo(processedLogo);
         }
-        
-        //console.log('Successfully updated university to:', newUniversityName);
+
       }
     } catch (error) {
       console.error('Error in handleUniversityChange:', error);
@@ -256,18 +249,15 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
       };
     } else if (updatedConfig.skipFileUpload) {
       shouldCallAPI = false;
-      //console.log('Skipping API call - only university name changed');
     }
 
     if (shouldCallAPI && configToSave) {
       try {
-        //console.log('Saving configuration with file:', !!configToSave.File);
         const { data: configSaved, error: saveError } = await updateUniversityConfig(configToSave);
         
         if (saveError) {
           console.error('Config save failed:', saveError);
         } else {
-          //console.log('Configuration saved successfully via API');
           
           if (configSaved?.logoPath) {
             const processedLogo = processLogoUrl(configSaved.logoPath);
@@ -282,11 +272,9 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
         showMessage(`API call failed: ${apiError.message}. Changes saved.`, 'warning');
       }
     } else {
-      //console.log('Updating configuration only');
       showMessage('University name updated', 'success');
     }
     if (newUniversityName !== universityName) {
-      //console.log('Updating university name to:', newUniversityName);
       setUniversityName(newUniversityName);
       
       setCurrentConfig(prev => ({
@@ -317,12 +305,10 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
 
     try {
       await loadUniversities();
-      //console.log('Successfully reloaded universities list');
     } catch (error) {
       console.error('Failed to reload universities, but configuration was updated :', error);
     }
     
-    //console.log('University configuration update completed successfully');
     
   } catch (error) {
     console.error('Error in handleSettingsClose:', error);
@@ -346,7 +332,6 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
           const selectedUni = universitiesList.find(u => u.isSelected);
           
           if (selectedUni) {
-            //console.log('Found selected university:', selectedUni.universityName || selectedUni.name);
             
             const config = await loadConfigFromAPI(selectedUni.universityName || selectedUni.name);
             if (config && config.universityName) {
@@ -362,12 +347,10 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
               }
             }
           } else {
-            //console.log('No university is selected');
             setUniversityName('University');
             setUniversityLogo('');
           }
         } else {
-          //console.log('No universities found');
           setUniversityName('University');
           setUniversityLogo('');
         }
@@ -384,18 +367,18 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
   }, [isLoaded, applications, defaultApplications, loadUniversities, loadConfigFromAPI, processLogoUrl]);
 
   useEffect(() => {
-    if (currentConfig.logoPath) {
-      const processedLogo = processLogoUrl(currentConfig.logoPath);
+    if (currentConfig?.logoPath) {
+      const processedLogo = processLogoUrl(currentConfig?.logoPath);
       if (processedLogo !== universityLogo) {
         setUniversityLogo(processedLogo);
       }
     }
-  }, [currentConfig.logoPath, processLogoUrl, universityLogo]);
+  }, [currentConfig?.logoPath, processLogoUrl, universityLogo]);
   
   useEffect(() => {
     if(openSettings)
     {
-      setCurrentConfig(universities.find(u => u.isSelected))
+      setCurrentConfig(universities?.find(u => u.isSelected) || defaultUniversityConfig)
     }
   },[openSettings])
 
@@ -699,6 +682,7 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
           loading={isLoading}
           universities={universities}
           onUniversityChange={handleUniversityChange}
+          setinitialConfig = {setCurrentConfig}
         />
       </Box>
       <Snackbar

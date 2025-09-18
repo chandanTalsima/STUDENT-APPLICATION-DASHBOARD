@@ -32,7 +32,7 @@ import {
 
 const resetToDefaultConfig = () => ({ ...defaultUniversityConfig });
 
-const Settings = ({ open, onClose, config: initialConfig, logo: initialLogo }) => {
+const Settings = ({ open, onClose, config: initialConfig, logo: initialLogo,setinitialConfig }) => {
   const [config, setConfig] = useState({
     ...defaultUniversityConfig,
     ...initialConfig
@@ -70,7 +70,7 @@ const Settings = ({ open, onClose, config: initialConfig, logo: initialLogo }) =
     try {
       setIsLoadingUniversities(true);
       const universities = await getAllUniversities();
-      const universitiesList = Object.entries(universities ?? {})?.map(x => ({...x[1],isSelected : x[1].isSelected.toLowerCase() == "true"})) || [];
+      const universitiesList = universities && Object.entries(universities ?? {})?.map(x => ({...x[1],isSelected : x[1].isSelected.toLowerCase() == "true"})) || [];
       setUniversities(universitiesList);
     } catch (error) {
       console.error('Error loading universities:', error);
@@ -92,6 +92,7 @@ const Settings = ({ open, onClose, config: initialConfig, logo: initialLogo }) =
           universityName: universityName,
           id: university.id || data.id
         };
+        //setinitialConfig(updatedConfig);
         setConfig(updatedConfig);
         setHasBeenCleared(false);
 
@@ -131,8 +132,8 @@ const Settings = ({ open, onClose, config: initialConfig, logo: initialLogo }) =
   };
   
   const handleClose = () => {
-    const isNewUniversity = !initialConfig || !initialConfig.universityName || 
-                          (config.universityName && config.universityName !== initialConfig.universityName);
+    const isNewUniversity = !initialConfig || !initialConfig.name || 
+                          (config.universityName && config.universityName !== initialConfig.name);
     
     if (isNewUniversity && config.universityName) {
       showMessage('Please save or clear the university before closing', 'warning');
@@ -231,8 +232,8 @@ const handleSubmit = async (e) => {
   try {
     setIsLoading(true);
     
-    const isNewUniversity = !initialConfig || !initialConfig.universityName || 
-                          (config.universityName !== initialConfig?.universityName);
+    const isNewUniversity = !initialConfig || !initialConfig.name || 
+                          (config.universityName !== initialConfig?.name);
 
     if (isNewUniversity) {
       if (!config.universityName || config.universityName.trim() === '') {
@@ -282,39 +283,9 @@ const handleSubmit = async (e) => {
       logo: logoPreview !== initialLogo
     };
     
-    // console.log('Submitting payload:', {
-    //   universityName: payload.UniversityName,
-    //   hasFile: !!payload.File,
-    //   hasFileChange: payload.hasFileChange
-    // });
-    
     if (onClose) {
       onClose(payload, logoPreview, file, universityNameChanged);
     }
-
-
-    // try {
-    //   const updatedUniversities = await getAllUniversities();
-    //   const universitiesList = Object.entries(universities ?? {})?.map(x => ({...x[1],isSelected : x[1].isSelected.toLowerCase() == "true"})) || [];
-    //   setUniversities(universitiesList);
- 
-    //   if (universityNameChanged) {
-
-    //     const newUniversity = updatedUniversities.find(u => 
-    //       u.universityName === config.universityName.trim() || 
-    //       u.name === config.universityName.trim()
-    //     );
-        
-    //     if (newUniversity) {
-    //       setConfig(prev => ({
-    //         ...prev,
-    //         id: newUniversity.id || prev.id
-    //       }));
-    //     }
-    //   }
-    // } catch (error) {
-    //   console.error('Error refreshing universities list:', error);
-    // }
     
   } catch (error) {
     console.error('Error saving configuration:', error);

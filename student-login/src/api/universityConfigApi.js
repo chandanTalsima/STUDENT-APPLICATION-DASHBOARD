@@ -3,14 +3,14 @@ const API_BASE_URL = 'https://130518web.saas.talismaonline.com/cxmai/api/copilot
 export const defaultUniversityConfig = {
   File: '',
   universityName: '',
-  isSelected: false, // Default to false, will be set when selected
+  isSelected: false, 
   logoPath: ''
 };
 
 /**
  * Uploads a new configuration or updates an existing one
- * @param {File|Object} fileOrConfig - Either a File object for logo upload or a config object
- * @param {string} [universityName] - Required when file is provided
+ * @param {File|Object} fileOrConfig 
+ * @param {string} [universityName] 
  * @returns {Promise<Object>} 
  */
 export const uploadConfig = async (fileOrConfig, universityName) => {
@@ -23,23 +23,18 @@ export const uploadConfig = async (fileOrConfig, universityName) => {
       if (!universityName) {
         throw new Error('University name is required for file upload');
       }
-      // Ensure the order: File, UniversityName, isSelected
+
       formData.append('File', fileOrConfig);
       formData.append('UniversityName', universityName);
-      // Only set isSelected: true if explicitly provided
       const shouldSelect = fileOrConfig?.isSelected ?? false;
-      formData.append('isSelected', String(shouldSelect));
+      formData.append('IsSelected', String(shouldSelect));
       hasFile = true;
     } else if (typeof fileOrConfig === 'object' && fileOrConfig !== null) {
       
-      // Ensure UniversityName is provided and not empty
       if (!fileOrConfig.UniversityName || fileOrConfig.UniversityName.trim() === '') {
         throw new Error('University name is required');
       }
       
-      // Ensure the order: File, UniversityName, isSelected
-      
-      // Handle file upload properly - add File first
       if (fileOrConfig.File && fileOrConfig.File instanceof File) {
         formData.append('File', fileOrConfig.File);
         hasFile = true;
@@ -53,33 +48,27 @@ export const uploadConfig = async (fileOrConfig, universityName) => {
           console.warn('Failed to convert base64 to blob:', error);
         }
       }
-      
-      // Add UniversityName
+
       formData.append('UniversityName', fileOrConfig.UniversityName.trim());
-      
-      // Add isSelected with proper type handling
-      // Default to false if not specified
+
       const isSelected = fileOrConfig.isSelected !== undefined ? 
         (typeof fileOrConfig.isSelected === 'string' ? 
           fileOrConfig.isSelected === 'true' : 
           Boolean(fileOrConfig.isSelected)
         ) : false;
-      formData.append('isSelected', String(isSelected));
+      formData.append('IsSelected', String(isSelected));
       
-      // Add other fields (excluding already processed ones)
       Object.entries(fileOrConfig).forEach(([key, value]) => {
         if (value !== undefined && value !== null && 
-            !['File', 'UniversityName', 'isSelected', 'hasFileChange', 'updateOtherUniversities'].includes(key)) {
+            !['File', 'UniversityName', 'IsSelected', 'hasFileChange', 'updateOtherUniversities'].includes(key)) {
           formData.append(key, value);
         }
       });
       
-      // Add hasFileChange flag if present
       if (fileOrConfig.hasFileChange !== undefined) {
         formData.append('hasFileChange', String(fileOrConfig.hasFileChange));
       }
-      
-      // Add updateOtherUniversities flag if present
+
       if (fileOrConfig.updateOtherUniversities !== undefined) {
         formData.append('updateOtherUniversities', String(fileOrConfig.updateOtherUniversities));
       }
@@ -106,12 +95,12 @@ export const uploadConfig = async (fileOrConfig, universityName) => {
 
     // If we reach here and there's no file, but the API requires it, 
     // return an error explaining the limitation
-    if (!hasFile) {
-      return {
-        data: null,
-        error: 'API requires both file and university name. To update only university name, use skipFileUpload option.'
-      };
-    }
+    // if (!hasFile) {
+    //   return {
+    //     data: null,
+    //     error: 'API requires both file and university name. To update only university name, use skipFileUpload option.'
+    //   };
+    // }
 
     console.log('Sending request to:', endpoint);
     const options = {
@@ -215,7 +204,6 @@ export const fetchConfig = async (universityId) => {
       };
     }
 
-    // Return default config with isSelected set to false when no specific university is requested
     return { 
       data: { 
         ...defaultUniversityConfig,
@@ -251,80 +239,10 @@ export const getAllUniversities = async () => {
     const data = JSON.parse(responseText);
     console.log('Parsed data type:', typeof data, 'Total keys:', Object.keys(data).length);
     
-    //const universities = [];
-    // let latestUniversity = null;
-    // let latestTimestamp = 0;
-
-    // First pass: collect all universities and find the selected one
-    // const universityEntries = Object.entries(data);
-    // let selectedUniversity = null;
-    
-    // universityEntries.forEach(([id, uniData]) => {
-    //   try {
-    //     if (uniData && typeof uniData === 'object' && uniData.name) {
-    //       // Check if this university is marked as selected in the API response
-    //       const isSelected = uniData.isSelected === true || uniData.isSelected.toLowerCase() === 'true';
-          
-    //       if (isSelected) {
-    //         selectedUniversity = { id, ...uniData };
-    //       }
-          
-    //       // Keep track of the most recent university as fallback
-    //       const timestamp = uniData.lastModified ? new Date(uniData.lastModified).getTime() : 0;
-    //       if (timestamp > latestTimestamp) {
-    //         latestTimestamp = timestamp;
-    //         latestUniversity = { id, ...uniData };
-    //       }
-    //     }
-    //   } catch (error) {
-    //     console.error('Error processing university:', id, error);
-    //   }
-    // });
-
-    // // If no university is explicitly selected, use the most recent one
-    // if (!selectedUniversity && latestUniversity) {
-    //   selectedUniversity = latestUniversity;
-    // }
-
-    // // Second pass: create university objects with proper selection state
-    // universityEntries.forEach(([id, uniData]) => {
-    //   try {
-    //     if (uniData && typeof uniData === 'object' && uniData.name) {
-    //       // Check if this is the selected university
-    //       const isSelected = selectedUniversity ? id === selectedUniversity.id : false;
-    //       console.log(`Adding university: ${uniData.name}${isSelected ? ' (selected)' : ''}`);
-          
-    //       universities.push({
-    //         id: id,
-    //         universityName: uniData.name,
-    //         logoUrl: uniData.logoUrl || '',
-    //         isSelected: isSelected,
-    //         lastModified: uniData.lastModified
-    //       });
-    //     } else {
-    //       console.log('Skipping invalid university data:', { id, uniData });
-    //     }
-    //   } catch (error) {
-    //     console.error('Error processing university:', id, error);
-    //   }
-    // });
-    
-    //console.log(`Found ${universities.length} universities`);
-    
-    // if (universities.length === 0) {
-    //   console.log('No universities found, returning default');
-    //   return [{
-    //     id: 'default',
-    //     universityName: defaultUniversityConfig.universityName,
-    //     logoUrl: defaultUniversityConfig.logoPath,
-    //     isSelected: false
-    //   }];
-    // }
-    
     return data;
   } catch (error) {
     console.error('Error fetching universities:', error);
-    return [];
+    return null;
   }
 };
 
