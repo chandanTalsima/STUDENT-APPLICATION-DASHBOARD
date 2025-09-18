@@ -32,7 +32,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
   const [openSettings, setOpenSettings] = useState(false);
   const [universities, setUniversities] = useState([]);
   const [currentConfig, setCurrentConfig] = useState({ ...defaultUniversityConfig });
-  const [universityName, setUniversityName] = useState(defaultUniversityConfig.universityName || 'University');
+  //const [universityName, setUniversityName] = useState(defaultUniversityConfig.universityName || 'University');
   const [universityLogo, setUniversityLogo] = useState('');
   const [snackbar, setSnackbar] = useState({
   open: false,
@@ -67,32 +67,32 @@ const DashboardPage = ({ studentId, applications = [] }) => {
     return `${window.location.origin}${logoPath.startsWith('/') ? '' : '/'}${logoPath}`;
   }, []);
 
-  const loadConfigFromAPI = useCallback(async (univName) => {
-    try {
-      const nameToUse = univName || universityName;
-      const { data: config, error } = await fetchConfig(nameToUse);
+  // const loadConfigFromAPI = useCallback(async (univName) => {
+  //   try {
+  //     const nameToUse = univName || currentConfig.universityName;
+  //     const { data: config, error } = await fetchConfig(nameToUse);
       
-      if (error) {
-        console.error('Error loading config:', error);
-        return null;
-      }
+  //     if (error) {
+  //       console.error('Error loading config:', error);
+  //       return null;
+  //     }
       
-      if (config) {
-        const updatedConfig = {
-          ...currentConfig,
-          ...config,
-          universityName: config.universityName || nameToUse,
-          logoPath: config.logoPath || currentConfig.logoPath
-        };
+  //     if (config) {
+  //       const updatedConfig = {
+  //         ...currentConfig,
+  //         ...config,
+  //         universityName: config.universityName || nameToUse,
+  //         logoPath: config.logoPath || currentConfig.logoPath
+  //       };
         
-        return updatedConfig;
-      }
-      return null;
-    } catch (error) {
-      console.error('Error in loadConfigFromAPI:', error);
-      return null;
-    }
-  }, [currentConfig, universityName]);
+  //       return updatedConfig;
+  //     }
+  //     return null;
+  //   } catch (error) {
+  //     console.error('Error in loadConfigFromAPI:', error);
+  //     return null;
+  //   }
+  // }, [currentConfig]);
 
   const loadUniversities = useCallback(async () => {
     try {
@@ -103,8 +103,14 @@ const DashboardPage = ({ studentId, applications = [] }) => {
       
       setUniversities(universitiesList);
       const selectedUniversity = universitiesList.find(u => u.isSelected);
-      if (selectedUniversity && !universityName) {
-        setUniversityName(selectedUniversity.universityName || selectedUniversity.name);
+      console.table(selectedUniversity)
+      if (selectedUniversity) {
+        setCurrentConfig({
+          File: '',
+          universityName: selectedUniversity.name,
+          isSelected: true, 
+          logoPath: selectedUniversity.logoUrl
+        })
       }
       
       return universitiesList;
@@ -114,7 +120,7 @@ const DashboardPage = ({ studentId, applications = [] }) => {
     } finally {
       setIsLoadingUniversities(false);
     }
-  }, [universityName]);
+  }, [currentConfig]);
 
   const handleUniversityChange = useCallback(async (university) => {
     if (!university) {
@@ -274,8 +280,7 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
     } else {
       showMessage('University name updated', 'success');
     }
-    if (newUniversityName !== universityName) {
-      setUniversityName(newUniversityName);
+    if (newUniversityName !== currentConfig.universityName) {
       
       setCurrentConfig(prev => ({
         ...prev,
@@ -298,7 +303,6 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
       ...currentConfig,
       universityName: newUniversityName,
       isSelected: true,
-      id: updatedConfig.id || currentConfig.id
     };
     
     setCurrentConfig(finalConfig);
@@ -316,17 +320,14 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
   } finally {
     setIsLoading(false);
   }
-}, [currentConfig, processLogoUrl, loadUniversities, universityLogo, universityName, updateUniversityConfig]);
+}, [currentConfig, processLogoUrl, loadUniversities, universityLogo,  updateUniversityConfig]);
 
   useEffect(() => {
     const initialize = async () => {
       try {
         const universitiesList = await loadUniversities();
-        if (applications.length > 0) {
-          setApplicationsToShow(applications);
-        } else {
-          setApplicationsToShow(defaultApplications);
-        }
+
+        setApplicationsToShow(defaultApplications);
         
         if (universitiesList.length > 0) {
           const selectedUni = universitiesList.find(u => u.isSelected);
@@ -364,7 +365,7 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
     if (!isLoaded) {
       initialize();
     }
-  }, [isLoaded, applications, defaultApplications, loadUniversities, loadConfigFromAPI, processLogoUrl]);
+  }, [isLoaded,  processLogoUrl]);
 
   useEffect(() => {
     if (currentConfig?.logoPath) {
@@ -417,7 +418,7 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
             <Box display="flex" alignItems="center" gap={1.5}>
               <Avatar
                 src={universityLogo}
-                alt={universityName}
+                alt={currentConfig?.universityName || defaultUniversityConfig.universityName}
                 onError={(e) => {
                   console.error('Error loading logo:', universityLogo);
                   e.target.style.display = 'none';
@@ -446,7 +447,7 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
                     display: 'inline-block'
                   }}
                 >
-                  {universityName}
+                  {currentConfig?.universityName || defaultUniversityConfig.universityName}
                 </Typography>
               </Box>
             </Box>
@@ -554,7 +555,7 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
                 }}
               >
                 {applicationsToShow.map((application, index) => {
-                  const uniqueKey = `${application.appNumber || 'app'}-${index}-${currentConfig.universityName}`;
+                  const uniqueKey = `${application.appNumber || 'app'}-${index}-${currentConfig?.universityName || defaultUniversityConfig.universityName}`;
                   return (
                     <ApplicationCard
                       key={uniqueKey}

@@ -2,7 +2,7 @@ const API_BASE_URL = 'https://130518web.saas.talismaonline.com/cxmai/api/copilot
 
 export const defaultUniversityConfig = {
   File: '',
-  universityName: '',
+  universityName: 'University',
   isSelected: false, 
   logoPath: ''
 };
