@@ -693,9 +693,7 @@ const handleSubmit = async (e) => {
             </Button>
           </DialogActions>
         </form>
-      </Dialog>
-      
-      <Snackbar
+         <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
@@ -711,6 +709,7 @@ const handleSubmit = async (e) => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+      </Dialog> 
     </>
   );
 };

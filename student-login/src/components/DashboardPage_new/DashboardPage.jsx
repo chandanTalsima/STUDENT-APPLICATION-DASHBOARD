@@ -32,7 +32,6 @@ const DashboardPage = ({ studentId, applications = [] }) => {
   const [openSettings, setOpenSettings] = useState(false);
   const [universities, setUniversities] = useState([]);
   const [currentConfig, setCurrentConfig] = useState({ ...defaultUniversityConfig });
-  //const [universityName, setUniversityName] = useState(defaultUniversityConfig.universityName || 'University');
   const [universityLogo, setUniversityLogo] = useState('');
   const [snackbar, setSnackbar] = useState({
   open: false,
@@ -66,33 +65,6 @@ const DashboardPage = ({ studentId, applications = [] }) => {
     }
     return `${window.location.origin}${logoPath.startsWith('/') ? '' : '/'}${logoPath}`;
   }, []);
-
-  // const loadConfigFromAPI = useCallback(async (univName) => {
-  //   try {
-  //     const nameToUse = univName || currentConfig.universityName;
-  //     const { data: config, error } = await fetchConfig(nameToUse);
-      
-  //     if (error) {
-  //       console.error('Error loading config:', error);
-  //       return null;
-  //     }
-      
-  //     if (config) {
-  //       const updatedConfig = {
-  //         ...currentConfig,
-  //         ...config,
-  //         universityName: config.universityName || nameToUse,
-  //         logoPath: config.logoPath || currentConfig.logoPath
-  //       };
-        
-  //       return updatedConfig;
-  //     }
-  //     return null;
-  //   } catch (error) {
-  //     console.error('Error in loadConfigFromAPI:', error);
-  //     return null;
-  //   }
-  // }, [currentConfig]);
 
   const loadUniversities = useCallback(async () => {
     try {
@@ -278,7 +250,7 @@ const handleSettingsClose = useCallback(async (updatedConfig, logoUrl, file = nu
         showMessage(`API call failed: ${apiError.message}. Changes saved.`, 'warning');
       }
     } else {
-      showMessage('University name updated', 'success');
+      showMessage('Settings updated', 'success');
     }
     if (newUniversityName !== currentConfig.universityName) {
       
